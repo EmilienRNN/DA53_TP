@@ -42,6 +42,7 @@ public class Lexer {
         } else if (scanner.isEndOfLine()) {
             scanner.get();
             scanner.nextLine();
+            System.out.println();
             return getNextToken();
 
         // Num Token
@@ -112,7 +113,8 @@ public class Lexer {
      * @return the token
      */
     protected Token checkOperand() throws IOException {
-        switch (scanner.get()){
+        char current = scanner.get();
+        switch (current){
             case '+':
                 return new Token(TokenType.OP, "+");
             case '-':
@@ -129,14 +131,14 @@ public class Lexer {
                 return new Token(TokenType.COMA);
             case '<':
                 StringBuilder relop = new StringBuilder();
-                relop.append(scanner.get());
+                relop.append(current);
                 if(scanner.peek() == '=') {
                     relop.append(scanner.get());
                 }
                 return new Token(TokenType.RELOP, relop.toString());
             case '>':
                 relop = new StringBuilder();
-                relop.append(scanner.get());
+                relop.append(current);
                 if(scanner.peek() == '=') {
                     relop.append(scanner.get());
                 }

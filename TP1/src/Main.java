@@ -9,14 +9,14 @@ import java.io.Reader;
 public class Main {
     public static void main(String[] args) {
         try {
-            Reader reader = new FileReader("src/test/test4.tb");
+            Reader reader = new FileReader("src/test/test1.tb");
             Lexer lexer = new Lexer(reader);
 
             Token token;
             System.out.println("========= Lexer Action =========\n");
 
             while ((token = lexer.getNextToken()) != null) {
-                System.out.println(token);
+                System.out.print(token + " ");
             }
 
             System.out.println("\n========= Symbol Table =========\n");
