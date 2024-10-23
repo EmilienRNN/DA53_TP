@@ -1,0 +1,36 @@
+code ::= line rest
+rest ::= <CR> code rest
+line ::= number statement | statement
+
+number ::= <NUMBER>
+statement ::= print | let | goto | end | gosub | return | input | rem | empty
+statement ::= if expression relational_operator expression then else
+statement ::= statement
+else ::= <ELSE> statement
+else ::= empty
+
+term ::= <NUMBER>
+term ::= <ID>
+expression ::= term
+expression ::= term factor term
+expression ::= <LEFT_PAREN> expression <RIGHT_PAREN>
+
+relational_operator ::= <LD> | <LE> | <EQ> | <NE> | <GE> | <GD>
+
+factor ::= <PLUS>
+factor ::= <MINUS>
+factor ::= <MULT>
+factor ::= <DIV>
+
+print ::= <PRINT> expression
+let ::= <LET> <ID> <EQ> expression
+if ::= <IF>
+then ::= <THEN>
+goto ::= <GOTO> expression
+end ::= <END>
+gosub ::= <GOSUB> expression
+return ::= <RETURN>
+input ::= <INPUT> <ID>
+rem ::= <REM> <STRING>
+empty ::=
+

@@ -1,0 +1,270 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2012-2021 Stephane GALLAND.
+ * 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+options {
+  IGNORE_CASE = true;
+  STATIC = false;
+}
+
+PARSER_BEGIN(TinyBasicParser)
+
+package fr.utbm.info.da53.lw2.parser;
+
+import java.util.SortedMap;
+import java.util.Map;
+import java.util.List;
+
+import java.util.TreeMap;
+import java.util.ArrayList;
+
+import fr.utbm.info.da53.lw2.context.*;
+import fr.utbm.info.da53.lw2.error.CompilerException;import fr.utbm.info.da53.lw2.symbol.*;
+import fr.utbm.info.da53.lw2.syntaxtree.*;
+
+public class TinyBasicParser{
+
+    private int basicLineNumber = 1;
+    private final SymbolTable symbolTable = new SymbolTable();
+
+    /** Replies the symbol table used by the parsser.
+    *  @return the symbol table
+    */
+    public SymbolTable getSymbolTable(){
+        return this.symbolTable;
+        }
+}}
+}
+
+PARSER_END(TinyBasicParser)
+
+///SKIP
+SKIP : {
+  " "
+  | "\t"
+  | "\r"
+  |  <"REM" ((" "|"\t")(~["\n","\r"])*)? ("\n" | "\r" | "\r\n" | "\n\r")>
+}
+
+///Token
+TOKEN : {
+    <NUMBER: ["0"-"9"] ("."(["0"-"9"])+)?>
+    | <ID: (["a"-"z","A"-"Z"])+>
+	| < STRING: "\"" (~["\""])* "\"" >
+    | <CR: "\n">
+    | <PLUS: "+">
+    | <MINUS: "-">
+    | <MULT: "*">
+    | <DIV: "/">
+    | <PRINT: "PRINT">
+    | <LET: "LET">
+    | <GOTO: "GOTO">
+    | <IF: "IF">
+    | <THEN: "THEN">
+    | <ELSE: "ELSE">
+    | <END: "END">
+    | <REM: "REM">
+    | <INPUT: "INPUT">
+    | <GOSUB: "GOSUB">
+    | <RETURN: "RETURN">
+    | <LD: "<">
+    | <LE: "<=">
+    | <EQ: "=">
+    | <NE: "<>" | "><">
+    | <GE: ">=">
+    | <GD: ">">
+    | <LEFT_PAREN: "(">
+    | <RIGHT_PAREN: ")">
+    | <DQ: "\"">
+}
+
+///Grammar
+private void code(SortedMap<Integer, AbstractStatementTreeNode> code) throws CompilerException :
+{}
+{
+    line(code)
+    rest(code)
+}
+
+private void rest(SortedMap<Integer, AbstractStatementTreeNode> code) throws CompilerException:
+{}
+{
+    <CR> code(code) rest(code)
+    | empty()
+}
+
+
+private void line(SortedMap<Integer, AbstractStatementTreeNode> code) throws CompilerException:
+{
+    Token t;
+    AbstractStatementTreeNode s;
+}
+{
+    t=<NUMBER> s = statement() {
+                                    Integer currentLineNumber = Number.parseInt(t.image);
+                                    if(currentLineNumber==null){
+                                        throw new CompilerException("Invalid line number: "+t.image);
+                                    }
+                                    if(s != null){
+                                        code.put(currentLineNumber, s);
+                                    }
+                                    this.basicLineNumber = currentLineNumber + 1;
+                                }
+
+    | statement() {
+                    if(s != null){
+                        code.put(this.basicLineNumber, s);
+                    }
+                    this.basicLineNumber++;
+                    }
+}
+
+private AbstracStatementTreeNode statement() throws CompilerException:
+{
+    Token t, t1, t2;
+    AbstractValueTreeNode a;
+}
+{
+    t=<PRINT> a=expression() { return new PrintStatementTreeNode(a); }
+    | t=<LET> t1=<ID> t2=<EQ> a=expression() {
+                                                this.symbolTable.declare(t1.image,t1.beginLine);
+                                                if(a == null){
+                                                    new CompilerException("Invalid expression in LET statement" + t.image
+                                                                            + " , need expression");
+                                                }
+                                                return new LetStatementTreeNode(t.image, t1.image, a); }
+    | t=<GOTO> t1=<NUMBER> {
+                            if(t1 == null){
+                                throw new CompilerException("Invalid expression in GOTO statement" + t.image
+                                                            + " , need expression");
+                            }
+                            return new GotoStatementTreeNode(a); }
+    | end()
+    | gosub()
+    | rreturn()
+    | input()
+    | rem()
+    | empty()
+    | iif() expression() relational_operator() expression() then() statement() eelse()
+}
+
+void eelse():
+{}
+{
+    <ELSE> statement()
+    | empty()
+}
+
+void expression():
+{}
+{
+    term() factor()  term()
+    | <LEFT_PAREN> expression() <RIGHT_PAREN>
+    | term()
+}
+
+void term():
+{}
+{
+    <NUMBER>
+    | <ID>
+}
+
+void relational_operator():
+{}
+{
+    <LD> | <LE> | <EQ> | <NE> | <GE> | <GD>
+}
+
+void factor():
+{}
+{
+    <PLUS>
+    | <MINUS>
+    | <MULT>
+    | <DIV>
+}
+
+void print():
+{}
+{
+    <PRINT> expression()
+}
+
+void let():
+{}
+{
+    <LET> <ID> <EQ> expression()
+}
+
+void iif():
+{}
+{
+    <IF>
+}
+
+void then():
+{}
+{
+    <THEN>
+}
+
+void ggoto():
+{}
+{
+    <GOTO> expression()
+}
+
+void end():
+{}
+{
+    <END>
+}
+
+void gosub():
+{}
+{
+    <GOSUB> expression()
+}
+
+void rreturn():
+ {}
+ {
+    <RETURN>
+ }
+
+ void input():
+ {}
+ {
+    <INPUT> <ID>
+ }
+
+ void rem():
+ {}
+ {
+    <REM> <STRING>
+ }
+
+ void empty():
+ {}
+ {
+ end()
+ }
+
+
