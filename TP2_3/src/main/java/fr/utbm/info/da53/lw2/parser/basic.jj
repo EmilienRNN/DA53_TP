@@ -106,7 +106,7 @@ private void rest(SortedMap<Integer, AbstractStatementTreeNode> code) throws Com
 {}
 {
     <CR> code(code) rest(code)
-    | empty()
+    | { return; }
 }
 
 
@@ -138,7 +138,9 @@ private void line(SortedMap<Integer, AbstractStatementTreeNode> code) throws Com
 private AbstracStatementTreeNode statement() throws CompilerException:
 {
     Token t, t1, t2;
-    AbstractValueTreeNode a;
+    AbstractValueTreeNode a,a1;
+    AbstractComparisonOperatorTreeNode c;
+    AbstracStatementTreeNode s,es;
 }
 {
     t=<PRINT> a=expression() { return new PrintStatementTreeNode(a); }
@@ -146,125 +148,146 @@ private AbstracStatementTreeNode statement() throws CompilerException:
                                                 this.symbolTable.declare(t1.image,t1.beginLine);
                                                 if(a == null){
                                                     new CompilerException("Invalid expression in LET statement" + t.image
-                                                                            + " , need expression");
+                                                                            + " , need expression. Line :" + t.endLine);
                                                 }
                                                 return new LetStatementTreeNode(t.image, t1.image, a); }
     | t=<GOTO> t1=<NUMBER> {
                             if(t1 == null){
                                 throw new CompilerException("Invalid expression in GOTO statement" + t.image
-                                                            + " , need expression");
+                                                            + " , need expression. Line :" + t.endLine);
                             }
                             return new GotoStatementTreeNode(a); }
-    | end()
-    | gosub()
-    | rreturn()
-    | input()
-    | rem()
-    | empty()
-    | iif() expression() relational_operator() expression() then() statement() eelse()
+    | t=<END> { return new EndStatementTreeNode(); }
+    | t=<GOSUB> t1=<NUMBER> {
+                            if(t1 == null){
+                                throw new CompilerException("Invalid expression in GOSUB statement" + t.image
+                                                            + " , need expression. Line :" + t.endLine);
+                            }
+                            return new GosubStatementTreeNode(a); }
+    | t=<RETURN> { return new ReturnStatementTreeNode(); }
+    | t=<INPUT> t1=<ID> {
+                         if(t1 == null){
+                             throw new CompilerException("Invalid expression in INPUT statement" + t.image
+                                                        + " , need expression. Line :" + t.endLine);
+                         }
+                         return new GosubStatementTreeNode(a); return new InputStatementTreeNode(t1.image); }
+    | t=<END> { return new EndStatementTreeNode(); }
+    | t=<IF> a=expression() c=relationalOperator() a1=expression()
+      t2=<THEN> s=statement() s2=eelse() {
+                                                                    if(a == null){
+                                                                        throw new CompilerException("Invalid expression in IF statement" + t.image
+                                                                                                    + " , need expression. Line :" + t.endLine);
+                                                                     }
+                                                                    if(c == null){
+                                                                       throw new CompilerException("Invalid expression in IF statement" + t.image
+                                                                                                   + " , need relational operator. Line :" + t.endLine);
+                                                                     }
+                                                                    if(a1 == null){
+                                                                        throw new CompilerException("Invalid expression in IF statement" + t.image
+                                                                                                    + " , need second expression. Line :" + t.endLine);
+                                                                    }
+                                                                    c.setOperands(a,a1);
+                                                                    if(s == null){
+                                                                        throw new CompilerException("Invalid expression in IF statement" + t.image
+                                                                                                    + " , need statement. Line :" + t.endLine);
+                                                                     }
+                                                                    return new IfStatementTreeNode(c,s,s2);}
+
 }
 
-void eelse():
+private AbstracStatementTreeNode eelse() throws CompilerException:
+{
+    Token t;
+    AbstracStatementTreeNode s;
+}
+{
+    t=<ELSE> s=statement() {
+                            if(s == null){
+                                throw new CompilerException("Invalid expression in ELSE statement" + t.image
+                                                            + " , need statement. Line :" + t.endLine);
+                            }
+                            return s;
+                            }
+    | { return null; }
+}
+
+
+private AbstractValueTreeNode expression() throws CompilerException:
+{
+    AbstractValueTreeNode t,e;
+}
+{
+    t=term() e=expressionTail(t) { return e;}
+}
+
+private AbstractValueTreeNode expressionTail(AbstractValueTreeNode leftOperand) throws CompilerException:
+{
+    AbstractValueTreeNode t,e;
+    AbstractBinaryOperatorTreeNode o;
+
+}
+{
+    o=<PLUS> t=term() e=expressionTail(t) { if(leftOperand ==null){
+                                                throw new CompilerException("Invalid expression in PLUS statement" + t.image
+                                                                            + " , need left operand. Line :" + t.endLine);
+                                            }
+                                            o.setOperands(leftOperand,t);
+                                            return new AdditionTreeNode(leftOperand,t);
+                                            }
+    | o=<MINUS> t=term() e=expressionTail(t) { if(leftOperand ==null){
+                                                throw new CompilerException("Invalid expression in MINUS statement" + t.image
+                                                                            + " , need left operand. Line :" + t.endLine);
+
+                                            }
+                                            return new SubtractionTreeNode(leftOperand,t);
+                                            }
+    | o=<MULT> t=term() e=expressionTail(t) { if(leftOperand == null){
+                                                throw new CompilerException("Invalid expression in MULT statement" + t.image
+                                                                            + " , need left operand. Line :" + t.endLine);
+
+                                            }
+                                            return new MultiplicationTreeNode(leftOperand,t);
+                                            }
+
+    | o=<DIV> t=term() e=expressionTail(t) { if(leftOperand ==null){
+                                                throw new CompilerException("Invalid expression in MINUS statement" + t.image
+                                                                            + " , need left operand. Line :" + t.endLine);
+
+                                            }
+                                            return new DivisionTreeNode(leftOperand,t);
+                                            }
+    | { return null; }
+}
+
+private AbstractValueTreeNode term() throws CompilerException:
+{
+    Token t,t1;
+    AbstractValueTreeNode e;
+}
+{
+    t=<NUMBER> { return new NumberTreeNode(t.image); }
+    | t=<ID> { return new IdentifierTreeNode(t.image); }
+    | t=<LEFT_PAREN> e=expression() t1=<RIGHT_PAREN> { if (e == null){
+                                                        throw new CompilerException("Invalid expression in term statement" + t.image
+                                                                                    + " , need expression. Line :" + t.endLine);
+                                                    }
+                                                    return e;
+                                                    }
+}
+
+
+private AbstractComparisonOperatorTreeNode relationalOperator() throws CompilerException :
 {}
 {
-    <ELSE> statement()
-    | empty()
+    <LD> { return new LessThanOperatorTreeNode(); }
+    | <LE> { return new LessThanOrEqualOperatorTreeNode(); }
+    | <EQ> { return new EqualOperatorTreeNode(); }
+    | <NE> { return new NotEqualOperatorTreeNode(); }
+    | <GE> { return new GreaterThanOrEqualOperatorTreeNode(); }
+    | <GD> { return new GreaterThanOperatorTreeNode(); }
 }
 
-void expression():
-{}
-{
-    term() factor()  term()
-    | <LEFT_PAREN> expression() <RIGHT_PAREN>
-    | term()
-}
 
-void term():
-{}
-{
-    <NUMBER>
-    | <ID>
-}
 
-void relational_operator():
-{}
-{
-    <LD> | <LE> | <EQ> | <NE> | <GE> | <GD>
-}
-
-void factor():
-{}
-{
-    <PLUS>
-    | <MINUS>
-    | <MULT>
-    | <DIV>
-}
-
-void print():
-{}
-{
-    <PRINT> expression()
-}
-
-void let():
-{}
-{
-    <LET> <ID> <EQ> expression()
-}
-
-void iif():
-{}
-{
-    <IF>
-}
-
-void then():
-{}
-{
-    <THEN>
-}
-
-void ggoto():
-{}
-{
-    <GOTO> expression()
-}
-
-void end():
-{}
-{
-    <END>
-}
-
-void gosub():
-{}
-{
-    <GOSUB> expression()
-}
-
-void rreturn():
- {}
- {
-    <RETURN>
- }
-
- void input():
- {}
- {
-    <INPUT> <ID>
- }
-
- void rem():
- {}
- {
-    <REM> <STRING>
- }
-
- void empty():
- {}
- {
- end()
- }
 
 
