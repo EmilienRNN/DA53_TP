@@ -150,13 +150,13 @@ private AbstracStatementTreeNode statement() throws CompilerException:
                                                     new CompilerException("Invalid expression in LET statement" + t.image
                                                                             + " , need expression. Line :" + t.endLine);
                                                 }
-                                                return new LetStatementTreeNode(t.image, t1.image, a); }
+                                                return new LetStatementTreeNode(t1.image, a); }
     | t=<GOTO> t1=<NUMBER> {
                             if(t1 == null){
                                 throw new CompilerException("Invalid expression in GOTO statement" + t.image
                                                             + " , need expression. Line :" + t.endLine);
                             }
-                            return new GotoStatementTreeNode(a); }
+                            return new GotoStatementTreeNode(t1.image); }
     | t=<END> { return new EndStatementTreeNode(); }
     | t=<GOSUB> t1=<NUMBER> {
                             if(t1 == null){
