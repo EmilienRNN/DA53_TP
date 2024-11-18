@@ -28,15 +28,9 @@ PARSER_BEGIN(TinyBasicParser)
 package fr.utbm.info.da53.lw2.parser;
 
 import java.util.SortedMap;
-import java.util.Map;
-import java.util.List;
 
-import java.util.TreeMap;
-import java.util.ArrayList;
-
-import fr.utbm.info.da53.lw2.context.*;
 import fr.utbm.info.da53.lw2.error.CompilerException;import fr.utbm.info.da53.lw2.symbol.*;
-import fr.utbm.info.da53.lw2.syntaxtree.*;
+import fr.utbm.info.da53.lw2.syntaxtree.*;import fr.utbm.info.da53.lw2.syntaxtree.binaryoperator.AdditionTreeNode;import fr.utbm.info.da53.lw2.syntaxtree.statement.EndStatementTreeNode;
 
 public class TinyBasicParser{
 
@@ -49,6 +43,9 @@ public class TinyBasicParser{
     public SymbolTable getSymbolTable(){
         return this.symbolTable;
         }
+}}
+}}
+}}
 }}
 }
 
@@ -170,7 +167,7 @@ private AbstracStatementTreeNode statement() throws CompilerException:
                              throw new CompilerException("Invalid expression in INPUT statement" + t.image
                                                         + " , need expression. Line :" + t.endLine);
                          }
-                         return new GosubStatementTreeNode(a); return new InputStatementTreeNode(t1.image); }
+                         return new InputStatementTreeNode(t1.image); }
     | t=<END> { return new EndStatementTreeNode(); }
     | t=<IF> a=expression() c=relationalOperator() a1=expression()
       t2=<THEN> s=statement() s2=eelse() {
@@ -191,7 +188,7 @@ private AbstracStatementTreeNode statement() throws CompilerException:
                                                                         throw new CompilerException("Invalid expression in IF statement" + t.image
                                                                                                     + " , need statement. Line :" + t.endLine);
                                                                      }
-                                                                    return new IfStatementTreeNode(c,s,s2);}
+                                                                    return new IfStatementTreeNode();}
 
 }
 
@@ -228,12 +225,12 @@ private AbstractValueTreeNode expressionTail(AbstractValueTreeNode leftOperand) 
 }
 {
     o=<PLUS> t=term() e=expressionTail(t) { if(leftOperand ==null){
-                                                throw new CompilerException("Invalid expression in PLUS statement" + t.image
-                                                                            + " , need left operand. Line :" + t.endLine);
-                                            }
-                                            o.setOperands(leftOperand,t);
-                                            return new AdditionTreeNode(leftOperand,t);
-                                            }
+                        throw new CompilerException("Invalid expression in PLUS statement" + t.image
+                                                    + " , need left operand. Line :" + t.endLine);
+                    }
+                    o.setOperands(leftOperand,t);
+                    return new AdditionTreeNode(leftOperand,t);
+                    }
     | o=<MINUS> t=term() e=expressionTail(t) { if(leftOperand ==null){
                                                 throw new CompilerException("Invalid expression in MINUS statement" + t.image
                                                                             + " , need left operand. Line :" + t.endLine);
