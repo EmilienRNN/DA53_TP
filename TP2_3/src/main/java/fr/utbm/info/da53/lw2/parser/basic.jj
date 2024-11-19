@@ -276,8 +276,8 @@ private AbstractValueTreeNode term() throws CompilerException:
 private AbstractComparisonOperatorTreeNode relationalOperator() throws CompilerException :
 {}
 {
-    <LD> { return new LessThanOperatorTreeNode(); }
-    | <LE> { return new LessThanOrEqualOperatorTreeNode(); }
+    <LD> { return new SmallerThanOperatorTreeNode(); }
+    | <LE> { return new SmallerThanOrEqualOperatorTreeNode(); }
     | <EQ> { return new EqualOperatorTreeNode(); }
     | <NE> { return new NotEqualOperatorTreeNode(); }
     | <GE> { return new GreaterThanOrEqualOperatorTreeNode(); }
