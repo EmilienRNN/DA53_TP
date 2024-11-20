@@ -40,6 +40,7 @@ public class GosubStatementTreeNode extends AbstractStatementTreeNode {
         if (value != null) {
             Value line = value.evaluate(context);
             if(line.isSet() && line.getType() == VariableType.NUMBER){
+                context = new ExecutionContext(context);
                 context.setNextLine((Integer) line.getValue());
             }else {
                 fail(context, InterpreterErrorType.EXPECTING_NUMBER, value.toString());

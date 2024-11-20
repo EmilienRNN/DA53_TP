@@ -167,6 +167,7 @@ private AbstracStatementTreeNode statement() throws CompilerException:
                              throw new CompilerException("Invalid expression in INPUT statement" + t.image
                                                         + " , need expression. Line :" + t.endLine);
                          }
+                         this.symbolTable.declare(t1.image,t1.beginLine);
                          return new InputStatementTreeNode(t1.image); }
     | t=<END> { return new EndStatementTreeNode(); }
     | t=<IF> a=expression() c=relationalOperator() a1=expression()
