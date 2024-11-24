@@ -10,6 +10,8 @@ import java.util.TreeMap;
 import java.util.ArrayList;
 
 import fr.utbm.info.da53.lw2.context.*;
+import fr.utbm.info.da53.lw2.error.CompilationErrorType;
+import fr.utbm.info.da53.lw2.error.CompilerException;
 import fr.utbm.info.da53.lw2.symbol.*;
 import fr.utbm.info.da53.lw2.syntaxtree.*;
 
@@ -25,6 +27,39 @@ public class TinyBasicParser implements TinyBasicParserConstants {
         return this.symbolTable;
     }
 
+	/** Run the lexer and the syntax analyzer.
+	 * @return the syntax tree.
+	 * @throw CompilerException
+	 */
+	public SortedMap<Integer,Statement> executeCompiler() throws CompilerException {
+		try {
+			SortedMap<Integer,Statement> code = new TreeMap<Integer,Statement>();
+			this.symbolTable.clear();
+			statements(code);
+			return code;
+		}
+		catch(ParseException e) {
+			if (e.currentToken!=null) {
+				throw new CompilerException(CompilationErrorType.SYNTAX_ERROR,
+						e.currentToken.endLine, e);
+			}
+			else if (this.token!=null) {
+				throw new CompilerException(CompilationErrorType.SYNTAX_ERROR,
+						this.token.endLine,  e);
+			}
+			throw new CompilerException(CompilationErrorType.SYNTAX_ERROR, e);
+		}
+		catch(TokenMgrError e) {
+			if (this.token!=null) {
+				throw new CompilerException(CompilationErrorType.ILLEGAL_CHARACTER,
+						this.token.endLine,  e);
+			}
+			throw new CompilerException(CompilationErrorType.INTERNAL_LEXER_ERROR, e);
+		}
+		catch(Throwable e) {
+			throw new CompilerException(CompilationErrorType.INTERNAL_ERROR, e);
+		}
+	}
   /** Generated Token Manager. */
   public TinyBasicParserTokenManager token_source;
   SimpleCharStream jj_input_stream;

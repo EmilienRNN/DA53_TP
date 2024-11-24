@@ -27,7 +27,7 @@ PARSER_BEGIN(TinyBasicParser)
 
 package fr.utbm.info.da53.lw2.parser;
 
-import java.util.SortedMap;
+import java.io.FileInputStream;import java.util.SortedMap;
 
 import fr.utbm.info.da53.lw2.error.CompilerException;import fr.utbm.info.da53.lw2.symbol.*;
 import fr.utbm.info.da53.lw2.syntaxtree.*;import fr.utbm.info.da53.lw2.syntaxtree.binaryoperator.AdditionTreeNode;import fr.utbm.info.da53.lw2.syntaxtree.statement.EndStatementTreeNode;
@@ -42,10 +42,41 @@ public class TinyBasicParser{
     */
     public SymbolTable getSymbolTable(){
         return this.symbolTable;
+    }
+
+    /** Run the lexer and the syntax analyzer.
+    * @return the syntax tree.
+    * @throw CompilerException
+    */
+    public SortedMap<Integer,Statement> executeCompiler() throws CompilerException {
+        try {
+            SortedMap<Integer,Statement> code = new TreeMap<Integer,Statement>();
+            this.symbolTable.clear();
+            statements(code);
+            return code;
         }
-}}
-}}
-}}
+        catch(ParseException e) {
+            if (e.currentToken!=null) {
+                throw new CompilerException(CompilationErrorType.SYNTAX_ERROR,
+    						e.currentToken.endLine, e);
+            }
+            else if (this.token!=null) {
+                throw new CompilerException(CompilationErrorType.SYNTAX_ERROR,
+    						this.token.endLine,  e);
+            }
+            throw new CompilerException(CompilationErrorType.SYNTAX_ERROR, e);
+        }
+        catch(TokenMgrError e) {
+            if (this.token!=null) {
+                throw new CompilerException(CompilationErrorType.ILLEGAL_CHARACTER,
+    						this.token.endLine,  e);
+            }
+            throw new CompilerException(CompilationErrorType.INTERNAL_LEXER_ERROR, e);
+        }
+        catch(Throwable e) {
+            throw new CompilerException(CompilationErrorType.INTERNAL_ERROR, e);
+        }
+    }
 }}
 }
 
@@ -189,7 +220,7 @@ private AbstracStatementTreeNode statement() throws CompilerException:
                                                                         throw new CompilerException("Invalid expression in IF statement" + t.image
                                                                                                     + " , need statement. Line :" + t.endLine);
                                                                      }
-                                                                    return new IfStatementTreeNode();}
+                                                                    return new IfStatementTreeNode(c,s,s2);}
 
 }
 

@@ -30,7 +30,7 @@ public class InputStatementTreeNode extends AbstractStatementTreeNode {
     }
 
     /**
-     * Verify if the value is a correct type for the LET statement. Verify if the variable is defined.
+     * Verify if the variable is a not null for the INPUT statement. Verify if the input is a number.
      *
      * @param context is the execution context
      * @return the execution context
@@ -41,9 +41,9 @@ public class InputStatementTreeNode extends AbstractStatementTreeNode {
         SymbolTableEntry entry = context.getSymbolTableEntry(this.identifier);
         if (entry == null) {
             fail(context, InterpreterErrorType.UNDEFINED_VARIABLE);
-            return context;
+
         } else {
-            Value v = context.getInterpreter().getStandardInput().readString(this.identifier);
+            Value v = context.getInterpreter().getStandardInput().readString("Enter value for " + this.identifier + ": ");
 
             if (v != null && v.isSet() && v.getType() == VariableType.NUMBER) {
                 entry.setValue(v);
