@@ -5,6 +5,7 @@ import fr.utbm.info.da53.lw2.error.InterpreterErrorType;
 import fr.utbm.info.da53.lw2.error.InterpreterException;
 import fr.utbm.info.da53.lw2.syntaxtree.AbstractStatementTreeNode;
 import fr.utbm.info.da53.lw2.syntaxtree.AbstractValueTreeNode;
+import fr.utbm.info.da53.lw2.type.NumberUtil;
 import fr.utbm.info.da53.lw2.type.Value;
 import fr.utbm.info.da53.lw2.type.VariableType;
 

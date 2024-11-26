@@ -11,59 +11,61 @@ public interface TinyBasicParserConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int NUMBER = 4;
+  int PRINT = 5;
   /** RegularExpression Id. */
-  int ID = 5;
+  int LET = 6;
   /** RegularExpression Id. */
-  int STRING = 6;
+  int GOTO = 7;
   /** RegularExpression Id. */
-  int CR = 7;
+  int IF = 8;
   /** RegularExpression Id. */
-  int PLUS = 8;
+  int THEN = 9;
   /** RegularExpression Id. */
-  int MINUS = 9;
+  int ELSE = 10;
   /** RegularExpression Id. */
-  int MULT = 10;
+  int END = 11;
   /** RegularExpression Id. */
-  int DIV = 11;
+  int REM = 12;
   /** RegularExpression Id. */
-  int PRINT = 12;
+  int INPUT = 13;
   /** RegularExpression Id. */
-  int LET = 13;
+  int GOSUB = 14;
   /** RegularExpression Id. */
-  int GOTO = 14;
+  int RETURN = 15;
   /** RegularExpression Id. */
-  int IF = 15;
+  int NUMBER = 16;
   /** RegularExpression Id. */
-  int THEN = 16;
+  int ID = 17;
   /** RegularExpression Id. */
-  int END = 17;
+  int STRING = 18;
   /** RegularExpression Id. */
-  int REM = 18;
+  int CR = 19;
   /** RegularExpression Id. */
-  int INPUT = 19;
+  int PLUS = 20;
   /** RegularExpression Id. */
-  int GOSUB = 20;
+  int MINUS = 21;
   /** RegularExpression Id. */
-  int RETURN = 21;
+  int MULT = 22;
   /** RegularExpression Id. */
-  int LD = 22;
+  int DIV = 23;
   /** RegularExpression Id. */
-  int LE = 23;
+  int LD = 24;
   /** RegularExpression Id. */
-  int EQ = 24;
+  int LE = 25;
   /** RegularExpression Id. */
-  int NE = 25;
+  int EQ = 26;
   /** RegularExpression Id. */
-  int GE = 26;
+  int NE = 27;
   /** RegularExpression Id. */
-  int GD = 27;
+  int GE = 28;
   /** RegularExpression Id. */
-  int LEFT_PAREN = 28;
+  int GD = 29;
   /** RegularExpression Id. */
-  int RIGHT_PAREN = 29;
+  int LEFT_PAREN = 30;
   /** RegularExpression Id. */
-  int DQ = 30;
+  int RIGHT_PAREN = 31;
+  /** RegularExpression Id. */
+  int DQ = 32;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -74,6 +76,18 @@ public interface TinyBasicParserConstants {
     "\" \"",
     "\"\\t\"",
     "\"\\r\"",
+    "<token of kind 4>",
+    "\"PRINT\"",
+    "\"LET\"",
+    "\"GOTO\"",
+    "\"IF\"",
+    "\"THEN\"",
+    "\"ELSE\"",
+    "\"END\"",
+    "\"REM\"",
+    "\"INPUT\"",
+    "\"GOSUB\"",
+    "\"RETURN\"",
     "<NUMBER>",
     "<ID>",
     "<STRING>",
@@ -82,16 +96,6 @@ public interface TinyBasicParserConstants {
     "\"-\"",
     "\"*\"",
     "\"/\"",
-    "\"PRINT\"",
-    "\"LET\"",
-    "\"GOTO\"",
-    "\"IF\"",
-    "\"THEN\"",
-    "\"END\"",
-    "\"REM\"",
-    "\"INPUT\"",
-    "\"GOSUB\"",
-    "\"RETURN\"",
     "\"<\"",
     "\"<=\"",
     "\"=\"",
