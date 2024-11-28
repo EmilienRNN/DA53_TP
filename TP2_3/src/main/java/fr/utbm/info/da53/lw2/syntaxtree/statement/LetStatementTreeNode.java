@@ -45,7 +45,7 @@ public class LetStatementTreeNode extends AbstractStatementTreeNode {
             Value v = value.evaluate(context);
 
             if(v.isSet()){
-                context.getInterpreter().getStandardOutput().println(v.getValue().toString());
+                //context.getInterpreter().getStandardOutput().println(v.getValue().toString());
             }else {
                 warn(context, InterpreterErrorType.UNSET_VALUE);
             }
@@ -60,5 +60,10 @@ public class LetStatementTreeNode extends AbstractStatementTreeNode {
         }
 
         return context;
+    }
+
+    @Override
+    public String toString() {
+        return "LET " + this.identifier + " = " + getChildAt(0).toString();
     }
 }

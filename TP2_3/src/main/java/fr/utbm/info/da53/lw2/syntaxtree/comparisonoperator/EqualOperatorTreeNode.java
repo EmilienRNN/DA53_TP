@@ -32,4 +32,5 @@ public class EqualOperatorTreeNode extends AbstractComparisonOperatorTreeNode {
     public String getOperatorString() {
         return "=";
     }
+
 }

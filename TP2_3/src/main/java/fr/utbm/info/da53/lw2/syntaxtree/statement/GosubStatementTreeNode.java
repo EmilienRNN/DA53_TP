@@ -50,4 +50,9 @@ public class GosubStatementTreeNode extends AbstractStatementTreeNode {
         }
         return context;
     }
+
+    @Override
+    public String toString() {
+        return "GOSUB " + getChildAt(0).toString();
+    }
 }

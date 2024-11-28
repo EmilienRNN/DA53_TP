@@ -47,7 +47,6 @@ public class TinyBasicParser{
     private final SymbolTable symbolTable = new SymbolTable();public TinyBasicParser() {
     }
 
-
     /** Replies the symbol table used by the parsser.
     *  @return the symbol table
     */
@@ -88,9 +87,7 @@ public class TinyBasicParser{
             throw new CompilerException(CompilationErrorType.INTERNAL_ERROR, e);
         }
     }
-}}
 }
-
 
 
 PARSER_END(TinyBasicParser)
@@ -142,8 +139,7 @@ TOKEN : {
 private void code(SortedMap<Integer, Statement> code) throws CompilerException :
 {}
 {
-    line(code)
-    rest(code)
+    line(code) rest(code)
 }
 
 private void rest(SortedMap<Integer, Statement> code) throws CompilerException:
@@ -160,7 +156,7 @@ private void line(SortedMap<Integer, Statement> code) throws CompilerException:
     AbstractStatementTreeNode s;
 }
 {
-    t=<NUMBER> s = statement() {
+    t=<NUMBER> s = statement(){
                                     Integer currentLineNumber = NumberUtil.parseInt(t.image);
                                     if(currentLineNumber==null){
                                         throw new CompilerException(CompilationErrorType.NUMBER_LITERAL_REQUIRED, t.beginLine, "Null");
@@ -177,6 +173,8 @@ private void line(SortedMap<Integer, Statement> code) throws CompilerException:
                     }
                     this.basicLineNumber++;
                     }
+     | <EOF>
+     | {return ;}
 }
 
 private AbstractStatementTreeNode statement() throws CompilerException:
@@ -194,11 +192,11 @@ private AbstractStatementTreeNode statement() throws CompilerException:
                                                     new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine, "Invalid expression in LET statement");
                                                 }
                                                 return new LetStatementTreeNode(t1.image, a); }
-    | t=<GOTO> a1=expression() {
-                            if(a1 == null){
+    | t=<GOTO> a=expression() {
+                            if (a == null){
                                 throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine, "Invalid expression in GOTO statement");
                             }
-                            return new GotoStatementTreeNode(a1); }
+                            return new GotoStatementTreeNode(a); }
     | t=<END> { return new EndStatementTreeNode(); }
     | t=<GOSUB> a1=expression() {
                             if(a1 == null){
@@ -272,21 +270,21 @@ private AbstractValueTreeNode expressionTail(AbstractValueTreeNode leftOperand) 
                         throw new CompilerException(CompilationErrorType.EXPECTING_LEFT_OPERAND, o.endLine,
                                                      "Invalid expression in PLUS statement");
                     }
-                    return new AdditionTreeNode(leftOperand,t);
+                    return new AdditionTreeNode(leftOperand,e);
                     }
     | o=<MINUS> t=term() e=expressionTail(t) { if(leftOperand ==null){
                                                 throw new CompilerException(CompilationErrorType.EXPECTING_LEFT_OPERAND,o.endLine,
                                                       "Invalid expression in MINUS statement");
 
                                             }
-                                            return new SubtractionTreeNode(leftOperand,t);
+                                            return new SubtractionTreeNode(leftOperand,e);
                                             }
     | o=<MULT> t=term() e=expressionTail(t) { if(leftOperand == null){
                                                 throw new CompilerException(CompilationErrorType.EXPECTING_LEFT_OPERAND,o.endLine,
                                                   "Invalid expression in MULT statement");
 
                                             }
-                                            return new MultiplicationTreeNode(leftOperand,t);
+                                            return new MultiplicationTreeNode(leftOperand,e);
                                             }
 
     | o=<DIV> t=term() e=expressionTail(t) { if(leftOperand ==null){
@@ -294,9 +292,9 @@ private AbstractValueTreeNode expressionTail(AbstractValueTreeNode leftOperand) 
                                                    "Invalid expression in DIV statement");
 
                                             }
-                                            return new DivisionTreeNode(leftOperand,t);
+                                            return new DivisionTreeNode(leftOperand,e);
                                             }
-    | { return null; }
+    | { return leftOperand; }
 }
 
 private AbstractValueTreeNode term() throws CompilerException:
@@ -306,7 +304,7 @@ private AbstractValueTreeNode term() throws CompilerException:
 }
 {
     t=<NUMBER> { return new NumberTreeNode(t.image); }
-    | t=<ID> { return new IdentifierTreeNode(t.image); }
+    | t=<ID> { this.symbolTable.declare(t.image,t.beginLine); return new IdentifierTreeNode(t.image); }
     | t=<LEFT_PAREN> e=expression() t1=<RIGHT_PAREN> { if (e == null){
                                                         throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine,
                                                           "Invalid expression");
@@ -318,14 +316,17 @@ private AbstractValueTreeNode term() throws CompilerException:
 
 
 private AbstractComparisonOperatorTreeNode relationalOperator() throws CompilerException :
-{}
 {
-    <LD> { return new SmallerThanOperatorTreeNode(); }
-    | <LE> { return new SmallerThanOrEqualOperatorTreeNode(); }
-    | <EQ> { return new EqualOperatorTreeNode(); }
-    | <NE> { return new NotEqualOperatorTreeNode(); }
-    | <GE> { return new GreaterThanOrEqualOperatorTreeNode(); }
-    | <GD> { return new GreaterThanOperatorTreeNode(); }
+            Token t;
+            AbstractValueTreeNode a,a1;
+}
+{
+    t=<LD> {return new SmallerThanOperatorTreeNode(); }
+    | t=<LE> { return new SmallerThanOrEqualOperatorTreeNode(); }
+    | t=<EQ> { return new EqualOperatorTreeNode(); }
+    | t=<NE> { return new NotEqualOperatorTreeNode(); }
+    | t=<GE> { return new GreaterThanOrEqualOperatorTreeNode(); }
+    | t=<GD> { return new GreaterThanOperatorTreeNode(); }
 }
 
 

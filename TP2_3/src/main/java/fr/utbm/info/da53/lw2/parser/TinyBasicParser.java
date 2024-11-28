@@ -19,8 +19,8 @@ import fr.utbm.info.da53.lw2.syntaxtree.comparisonoperator.*;
 public class TinyBasicParser implements TinyBasicParserConstants {
 
     private int basicLineNumber = 1;
-    private final SymbolTable symbolTable = new SymbolTable();
-
+    private final SymbolTable symbolTable = new SymbolTable();public TinyBasicParser() {
+    }
 
     /** Replies the symbol table used by the parsser.
     *  @return the symbol table
@@ -113,10 +113,13 @@ if(s != null){
                     this.basicLineNumber++;
       break;
       }
+    case 0:{
+      jj_consume_token(0);
+      break;
+      }
     default:
       jj_la1[1] = jj_gen;
-      jj_consume_token(-1);
-      throw new ParseException();
+{if ("" != null) return ;}
     }
 }
 
@@ -145,11 +148,11 @@ this.symbolTable.declare(t1.image,t1.beginLine);
       }
     case GOTO:{
       t = jj_consume_token(GOTO);
-      a1 = expression();
-if(a1 == null){
+      a = expression();
+if (a == null){
                                 {if (true) throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine, "Invalid expression in GOTO statement");}
                             }
-                            {if ("" != null) return new GotoStatementTreeNode(a1);}
+                            {if ("" != null) return new GotoStatementTreeNode(a);}
       break;
       }
     case END:{
@@ -257,7 +260,7 @@ if(leftOperand ==null){
                         {if (true) throw new CompilerException(CompilationErrorType.EXPECTING_LEFT_OPERAND, o.endLine,
                                                      "Invalid expression in PLUS statement");}
                     }
-                    {if ("" != null) return new AdditionTreeNode(leftOperand,t);}
+                    {if ("" != null) return new AdditionTreeNode(leftOperand,e);}
       break;
       }
     case MINUS:{
@@ -269,7 +272,7 @@ if(leftOperand ==null){
                                                       "Invalid expression in MINUS statement");}
 
                                             }
-                                            {if ("" != null) return new SubtractionTreeNode(leftOperand,t);}
+                                            {if ("" != null) return new SubtractionTreeNode(leftOperand,e);}
       break;
       }
     case MULT:{
@@ -281,7 +284,7 @@ if(leftOperand == null){
                                                   "Invalid expression in MULT statement");}
 
                                             }
-                                            {if ("" != null) return new MultiplicationTreeNode(leftOperand,t);}
+                                            {if ("" != null) return new MultiplicationTreeNode(leftOperand,e);}
       break;
       }
     case DIV:{
@@ -293,12 +296,12 @@ if(leftOperand ==null){
                                                    "Invalid expression in DIV statement");}
 
                                             }
-                                            {if ("" != null) return new DivisionTreeNode(leftOperand,t);}
+                                            {if ("" != null) return new DivisionTreeNode(leftOperand,e);}
       break;
       }
     default:
       jj_la1[4] = jj_gen;
-{if ("" != null) return null;}
+{if ("" != null) return leftOperand;}
     }
     throw new Error("Missing return statement in function");
 }
@@ -313,7 +316,7 @@ if(leftOperand ==null){
       }
     case ID:{
       t = jj_consume_token(ID);
-{if ("" != null) return new IdentifierTreeNode(t.image);}
+this.symbolTable.declare(t.image,t.beginLine); {if ("" != null) return new IdentifierTreeNode(t.image);}
       break;
       }
     case LEFT_PAREN:{
@@ -340,35 +343,36 @@ if (e == null){
     throw new Error("Missing return statement in function");
 }
 
-  final private AbstractComparisonOperatorTreeNode relationalOperator() throws ParseException, CompilerException {
+  final private AbstractComparisonOperatorTreeNode relationalOperator() throws ParseException, CompilerException {Token t;
+            AbstractValueTreeNode a,a1;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
     case LD:{
-      jj_consume_token(LD);
+      t = jj_consume_token(LD);
 {if ("" != null) return new SmallerThanOperatorTreeNode();}
       break;
       }
     case LE:{
-      jj_consume_token(LE);
+      t = jj_consume_token(LE);
 {if ("" != null) return new SmallerThanOrEqualOperatorTreeNode();}
       break;
       }
     case EQ:{
-      jj_consume_token(EQ);
+      t = jj_consume_token(EQ);
 {if ("" != null) return new EqualOperatorTreeNode();}
       break;
       }
     case NE:{
-      jj_consume_token(NE);
+      t = jj_consume_token(NE);
 {if ("" != null) return new NotEqualOperatorTreeNode();}
       break;
       }
     case GE:{
-      jj_consume_token(GE);
+      t = jj_consume_token(GE);
 {if ("" != null) return new GreaterThanOrEqualOperatorTreeNode();}
       break;
       }
     case GD:{
-      jj_consume_token(GD);
+      t = jj_consume_token(GD);
 {if ("" != null) return new GreaterThanOperatorTreeNode();}
       break;
       }
@@ -397,7 +401,7 @@ if (e == null){
 	   jj_la1_init_1();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x80000,0x1e9e0,0xe9e0,0x400,0xf00000,0x40070000,0x3f000000,};
+	   jj_la1_0 = new int[] {0x80000,0x1e9e1,0xe9e0,0x400,0xf00000,0x40070000,0x3f000000,};
 	}
 	private static void jj_la1_init_1() {
 	   jj_la1_1 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,};

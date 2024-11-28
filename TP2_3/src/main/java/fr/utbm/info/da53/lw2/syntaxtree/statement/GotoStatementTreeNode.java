@@ -52,5 +52,9 @@ public class GotoStatementTreeNode extends AbstractStatementTreeNode {
         return context;
     }
 
+    @Override
+    public String toString() {
+        return "GOTO " + getChildAt(0).toString();
+    }
 
 }

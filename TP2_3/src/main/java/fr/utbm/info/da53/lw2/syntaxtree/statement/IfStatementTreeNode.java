@@ -50,16 +50,14 @@ public class IfStatementTreeNode extends AbstractStatementTreeNode {
                 if ((Boolean) v.getValue()) {
                     AbstractStatementTreeNode s = (AbstractStatementTreeNode) getChildAt(1);
                     if (s != null) {
-                        return s.run(context);
+                        context = s.run(context);
                     } else {
                         warn(context, InterpreterErrorType.NOTHING_TO_RUN, toString());
                     }
                 } else {
                     AbstractStatementTreeNode s2 = (AbstractStatementTreeNode) getChildAt(2);
                     if (s2 != null) {
-                        return s2.run(context);
-                    } else {
-                        warn(context, InterpreterErrorType.NOTHING_TO_RUN, toString());
+                        context = s2.run(context);
                     }
                 }
             } else {
@@ -67,6 +65,21 @@ public class IfStatementTreeNode extends AbstractStatementTreeNode {
             }
         }
         return context;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        b.append("IF ");
+        b.append(getChildAt(0).toString());
+        b.append(" THEN ");
+        b.append(getChildAt(1).toString());
+        Object o = getChildAt(2);
+        if (o!=null) {
+            b.append(" ELSE ");
+            b.append(o.toString());
+        }
+        return b.toString();
     }
 }
 

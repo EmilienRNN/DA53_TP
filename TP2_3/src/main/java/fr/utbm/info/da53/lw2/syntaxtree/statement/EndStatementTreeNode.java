@@ -24,6 +24,12 @@ public class EndStatementTreeNode extends AbstractStatementTreeNode {
      */
     @Override
     public ExecutionContext run(ExecutionContext context) throws InterpreterException {
+        context.getInterpreter().exit();
         return context;
+    }
+
+    @Override
+    public String toString() {
+        return "END";
     }
 }

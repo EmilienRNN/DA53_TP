@@ -34,4 +34,9 @@ public class ReturnStatementTreeNode extends AbstractStatementTreeNode {
 
         return context;
     }
+
+    @Override
+    public String toString() {
+        return "RETURN";
+    }
 }

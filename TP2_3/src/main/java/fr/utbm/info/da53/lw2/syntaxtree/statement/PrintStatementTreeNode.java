@@ -51,4 +51,9 @@ public class PrintStatementTreeNode extends AbstractStatementTreeNode {
 
         return context;
     }
+
+    @Override
+    public String toString() {
+        return "PRINT " + getChildAt(0).toString();
+    }
 }

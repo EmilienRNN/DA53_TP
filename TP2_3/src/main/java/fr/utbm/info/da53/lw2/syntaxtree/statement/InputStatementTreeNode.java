@@ -54,4 +54,9 @@ public class InputStatementTreeNode extends AbstractStatementTreeNode {
         }
         return context;
     }
+
+    @Override
+    public String toString() {
+        return "INPUT " + this.identifier;
+    }
 }
