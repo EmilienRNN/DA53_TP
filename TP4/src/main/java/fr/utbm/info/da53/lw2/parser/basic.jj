@@ -1,0 +1,335 @@
+/* 
+ * $Id$
+ * 
+ * Copyright (c) 2012-2021 Stephane GALLAND.
+ * 
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+
+options {
+  IGNORE_CASE = true;
+  STATIC = false;
+}
+
+PARSER_BEGIN(TinyBasicParser)
+
+package fr.utbm.info.da53.lw2.parser;
+
+import java.io.InputStream;import java.util.SortedMap;
+
+import fr.utbm.info.da53.lw2.error.CompilerException;
+import fr.utbm.info.da53.lw2.symbol.*;
+import fr.utbm.info.da53.lw2.syntaxtree.*;
+import java.util.TreeMap;
+import fr.utbm.info.da53.lw2.context.Statement;
+import fr.utbm.info.da53.lw2.error.CompilationErrorType;
+import fr.utbm.info.da53.lw2.type.NumberUtil;
+
+import fr.utbm.info.da53.lw2.syntaxtree.binaryoperator.*;
+import fr.utbm.info.da53.lw2.syntaxtree.statement.*;
+import fr.utbm.info.da53.lw2.syntaxtree.comparisonoperator.*;
+
+public class TinyBasicParser{
+
+    private int basicLineNumber = 1;
+    private final SymbolTable symbolTable = new SymbolTable();public TinyBasicParser() {
+    }
+
+    /** Replies the symbol table used by the parsser.
+    *  @return the symbol table
+    */
+    public SymbolTable getSymbolTable(){
+        return this.symbolTable;
+    }
+
+    /** Run the lexer and the syntax analyzer.
+    * @return the syntax tree.
+    * @throw CompilerException
+    */
+    public SortedMap<Integer,Statement> executeCompiler() throws CompilerException {
+        try {
+            SortedMap<Integer,Statement> code = new TreeMap<Integer,Statement>();
+            this.symbolTable.clear();
+            code(code);
+            return code;
+        }
+        catch(ParseException e) {
+            if (e.currentToken!=null) {
+                throw new CompilerException(CompilationErrorType.SYNTAX_ERROR,
+    						e.currentToken.endLine, e);
+            }
+            else if (this.token!=null) {
+                throw new CompilerException(CompilationErrorType.SYNTAX_ERROR,
+    						this.token.endLine,  e);
+            }
+            throw new CompilerException(CompilationErrorType.SYNTAX_ERROR, e);
+        }
+        catch(TokenMgrError e) {
+            if (this.token!=null) {
+                throw new CompilerException(CompilationErrorType.ILLEGAL_CHARACTER,
+    						this.token.endLine,  e);
+            }
+            throw new CompilerException(CompilationErrorType.INTERNAL_LEXER_ERROR, e);
+        }
+        catch(Throwable e) {
+            throw new CompilerException(CompilationErrorType.INTERNAL_ERROR, e);
+        }
+    }
+}
+
+
+PARSER_END(TinyBasicParser)
+
+///SKIP
+SKIP : {
+  " "
+  | "\t"
+  | "\r"
+  |  <"REM" ((" "|"\t")(~["\n","\r"])*)? ("\n" | "\r" | "\r\n" | "\n\r")>
+}
+
+TOKEN : {
+   <PRINT: "PRINT">
+   | <LET: "LET">
+   | <GOTO: "GOTO">
+   | <IF: "IF">
+   | <THEN: "THEN">
+   | <ELSE: "ELSE">
+   | <END: "END">
+   | <REM: "REM">
+   | <INPUT: "INPUT">
+   | <GOSUB: "GOSUB">
+   | <RETURN: "RETURN">
+}
+
+///Token
+TOKEN : {
+    <NUMBER: (["0"-"9"])+("."(["0"-"9"])+)?>
+    | <ID: (["a"-"z","A"-"Z"])+>
+	| <STRING: "\"" (~["\""])* "\"" >
+    | <CR: "\n">
+    | <PLUS: "+">
+    | <MINUS: "-">
+    | <MULT: "*">
+    | <DIV: "/">
+    | <LD: "<">
+    | <LE: "<=">
+    | <EQ: "=">
+    | <NE: "<>" | "><">
+    | <GE: ">=">
+    | <GD: ">">
+    | <LEFT_PAREN: "(">
+    | <RIGHT_PAREN: ")">
+    | <DQ: "\"">
+}
+
+///Grammar
+private void code(SortedMap<Integer, Statement> code) throws CompilerException :
+{}
+{
+    line(code) rest(code)
+}
+
+private void rest(SortedMap<Integer, Statement> code) throws CompilerException:
+{}
+{
+    <CR> code(code) rest(code)
+    | { return; }
+}
+
+
+private void line(SortedMap<Integer, Statement> code) throws CompilerException:
+{
+    Token t;
+    AbstractStatementTreeNode s;
+}
+{
+    t=<NUMBER> s = statement(){
+                                    Integer currentLineNumber = NumberUtil.parseInt(t.image);
+                                    if(currentLineNumber==null){
+                                        throw new CompilerException(CompilationErrorType.NUMBER_LITERAL_REQUIRED, t.beginLine, "Null");
+                                    }
+                                    if(s != null){
+                                        code.put(currentLineNumber, s);
+                                    }
+                                    this.basicLineNumber = currentLineNumber + 1;
+                                }
+
+    | s = statement() {
+                    if(s != null){
+                        code.put(this.basicLineNumber, s);
+                    }
+                    this.basicLineNumber++;
+                    }
+     | <EOF>
+     | {return ;}
+}
+
+private AbstractStatementTreeNode statement() throws CompilerException:
+{
+    Token t, t1, t2;
+    AbstractValueTreeNode a,a1;
+    AbstractComparisonOperatorTreeNode c;
+    AbstractStatementTreeNode s,s2;
+}
+{
+    t=<PRINT> a=expression() { return new PrintStatementTreeNode(a); }
+    | t=<LET> t1=<ID> t2=<EQ> a=expression() {
+                                                this.symbolTable.declare(t1.image,t1.beginLine);
+                                                if(a == null){
+                                                    new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine, "Invalid expression in LET statement");
+                                                }
+                                                return new LetStatementTreeNode(t1.image, a); }
+    | t=<GOTO> a=expression() {
+                            if (a == null){
+                                throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine, "Invalid expression in GOTO statement");
+                            }
+                            return new GotoStatementTreeNode(a); }
+    | t=<END> { return new EndStatementTreeNode(); }
+    | t=<GOSUB> a1=expression() {
+                            if(a1 == null){
+                                throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine, "Invalid expression in GOSUB statement");
+                            }
+                            return new GosubStatementTreeNode(a1); }
+    | t=<RETURN> { return new ReturnStatementTreeNode(); }
+    | t=<INPUT> t1=<ID> {
+                         if(t1 == null){
+                             throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine, "Invalid expression in INPUT statement");
+
+                         }
+                         this.symbolTable.declare(t1.image,t1.beginLine);
+                         return new InputStatementTreeNode(t1.image); }
+    | t=<IF> a=expression() c=relationalOperator() a1=expression()
+      t2=<THEN> s=statement() s2=eelse() {
+                                                                    if(a == null){
+                                                                       throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine,
+                                                                        "Invalid expression in IF statement");
+
+                                                                     }
+                                                                    if(c == null){
+                                                                       throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine,
+                                                                        "Invalid expression in IF statement");
+                                                                     }
+                                                                    if(a1 == null){
+                                                                        throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine,
+                                                                         "Invalid expression in IF statement");
+                                                                    }
+                                                                    c.setOperands(a,a1);
+                                                                    if(s == null){
+                                                                        throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine,
+                                                                          "Invalid expression in IF statement");
+                                                                     }
+                                                                    return new IfStatementTreeNode(c,s,s2);}
+
+}
+
+private AbstractStatementTreeNode eelse() throws CompilerException:
+{
+    Token t;
+    AbstractStatementTreeNode s;
+}
+{
+    t=<ELSE> s=statement() {
+                            if(s == null){
+                                throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine,
+                                  "Invalid expression in ELSE statement");
+                            }
+                            return s;
+                            }
+    | { return null; }
+}
+
+
+private AbstractValueTreeNode expression() throws CompilerException:
+{
+    AbstractValueTreeNode t,e;
+}
+{
+    t=term() e=expressionTail(t) { return e;}
+}
+
+private AbstractValueTreeNode expressionTail(AbstractValueTreeNode leftOperand) throws CompilerException:
+{
+    Token o;
+    AbstractValueTreeNode t,e;
+}
+{
+    o=<PLUS> t=term() e=expressionTail(t) { if(leftOperand ==null){
+                        throw new CompilerException(CompilationErrorType.EXPECTING_LEFT_OPERAND, o.endLine,
+                                                     "Invalid expression in PLUS statement");
+                    }
+                    return new AdditionTreeNode(leftOperand,e);
+                    }
+    | o=<MINUS> t=term() e=expressionTail(t) { if(leftOperand ==null){
+                                                throw new CompilerException(CompilationErrorType.EXPECTING_LEFT_OPERAND,o.endLine,
+                                                      "Invalid expression in MINUS statement");
+
+                                            }
+                                            return new SubtractionTreeNode(leftOperand,e);
+                                            }
+    | o=<MULT> t=term() e=expressionTail(t) { if(leftOperand == null){
+                                                throw new CompilerException(CompilationErrorType.EXPECTING_LEFT_OPERAND,o.endLine,
+                                                  "Invalid expression in MULT statement");
+
+                                            }
+                                            return new MultiplicationTreeNode(leftOperand,e);
+                                            }
+
+    | o=<DIV> t=term() e=expressionTail(t) { if(leftOperand ==null){
+                                                throw new CompilerException(CompilationErrorType.EXPECTING_LEFT_OPERAND,o.endLine,
+                                                   "Invalid expression in DIV statement");
+
+                                            }
+                                            return new DivisionTreeNode(leftOperand,e);
+                                            }
+    | { return leftOperand; }
+}
+
+private AbstractValueTreeNode term() throws CompilerException:
+{
+    Token t,t1;
+    AbstractValueTreeNode e;
+}
+{
+    t=<NUMBER> { return new NumberTreeNode(t.image); }
+    | t=<ID> { this.symbolTable.declare(t.image,t.beginLine); return new IdentifierTreeNode(t.image); }
+    | t=<LEFT_PAREN> e=expression() t1=<RIGHT_PAREN> { if (e == null){
+                                                        throw new CompilerException(CompilationErrorType.EXPECTING_EXPRESSION, t.endLine,
+                                                          "Invalid expression");
+                                                    }
+                                                    return e;
+                                                    }
+    | t=<STRING> { return new StringTreeNode(t.image); }
+}
+
+
+private AbstractComparisonOperatorTreeNode relationalOperator() throws CompilerException :
+{
+            Token t;
+            AbstractValueTreeNode a,a1;
+}
+{
+    t=<LD> {return new SmallerThanOperatorTreeNode(); }
+    | t=<LE> { return new SmallerThanOrEqualOperatorTreeNode(); }
+    | t=<EQ> { return new EqualOperatorTreeNode(); }
+    | t=<NE> { return new NotEqualOperatorTreeNode(); }
+    | t=<GE> { return new GreaterThanOrEqualOperatorTreeNode(); }
+    | t=<GD> { return new GreaterThanOperatorTreeNode(); }
+}
+
+
+
+
+
